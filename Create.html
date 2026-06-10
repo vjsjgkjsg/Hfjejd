@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC_ROOT — Создать заказ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="container">
+    <header class="header">
+      <div class="logo">DC_ROOT</div>
+      <nav class="nav-links">
+        <a href="index.html">Биржа</a>
+        <a href="services.html">Услуги</a>
+        <a href="create.html" class="active">+ Заказ</a>
+        <a href="profile.html">Профиль</a>
+      </nav>
+    </header>
+
+    <div class="card" style="max-width:600px; margin:0 auto;">
+      <h2 style="margin-bottom:20px;">📝 Новый заказ</h2>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:5px;">Название</label>
+        <input type="text" id="title" class="glass-input" style="width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:white;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:5px;">Категория</label>
+        <select id="category" class="glass-input" style="width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:white;">
+          <option value="bot">Боты</option>
+          <option value="site">Сайты</option>
+          <option value="parse">Парсинг</option>
+        </select>
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:5px;">Бюджет</label>
+        <input type="text" id="price" class="glass-input" placeholder="от $300" style="width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:white;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; margin-bottom:5px;">Описание</label>
+        <textarea id="desc" rows="4" class="glass-input" style="width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:white;"></textarea>
+      </div>
+      <button class="btn btn-danger" style="width:100%;" onclick="createOrder()">Опубликовать заказ</button>
+    </div>
+  </div>
+
+  <script>
+    function createOrder() {
+      const title = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const price = document.getElementById('price').value.trim() || 'договорная';
+      const desc = document.getElementById('desc').value.trim();
+
+      if (!title || !desc) {
+        alert('Заполните название и описание');
+        return;
+      }
+
+      const orders = JSON.parse(localStorage.getItem('dc_orders')) || [];
+      const newOrder = {
+        id: Date.now(),
+        title,
+        category,
+        price,
+        desc,
+        author: 'You',
+        date: new Date().toISOString().slice(0,10)
+      };
+      orders.unshift(newOrder);
+      localStorage.setItem('dc_orders', JSON.stringify(orders));
+      alert('Заказ опубликован!');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
