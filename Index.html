@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC_ROOT — Биржа</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="container">
+    <!-- Шапка -->
+    <header class="header">
+      <div class="logo">DC_ROOT</div>
+      <nav class="nav-links">
+        <a href="index.html" class="active">Биржа</a>
+        <a href="services.html">Услуги</a>
+        <a href="freelancers.html">Исполнители</a>
+        <a href="create.html">+ Заказ</a>
+        <a href="profile.html">Профиль</a>
+      </nav>
+    </header>
+
+    <!-- Фильтры -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+      <button class="btn btn-outline active" onclick="filterOrders('all')">Все</button>
+      <button class="btn btn-outline" onclick="filterOrders('bot')">Боты</button>
+      <button class="btn btn-outline" onclick="filterOrders('site')">Сайты</button>
+      <button class="btn btn-outline" onclick="filterOrders('parse')">Парсинг</button>
+    </div>
+
+    <!-- Список заказов -->
+    <div id="ordersContainer" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+      <!-- Заказы рендерятся через JS -->
+    </div>
+  </div>
+
+  <!-- Нижняя навигация -->
+  <div class="bottom-nav">
+    <a href="index.html" class="active">🏠 Биржа</a>
+    <a href="services.html">📦 Услуги</a>
+    <a href="create.html">✍️ Создать</a>
+    <a href="profile.html">👤 Профиль</a>
+  </div>
+
+  <script>
+    // Демо-заказы, если localStorage пуст
+    const demoOrders = [
+      { id: 1, title: "Бот для обнала крипты", category: "bot", price: "от $800", desc: "Нужен телеграм-бот с автоприёмом платежей и распределением по кошелькам.", author: "CryptoShadow", date: "2025-01-10" },
+      { id: 2, title: "Лендинг под инфокурс", category: "site", price: "от $450", desc: "Одностраничник с видео-продажником и формой оплаты.", author: "InfoBoss", date: "2025-01-09" },
+      { id: 3, title: "Парсер аудитории Telegram", category: "parse", price: "от $250", desc: "Сбор активных пользователей из чатов, фильтрация по ключевым словам.", author: "DataHunter", date: "2025-01-08" }
+    ];
+
+    // Загрузка из localStorage
+    let orders = JSON.parse(localStorage.getItem('dc_orders')) || demoOrders;
+
+    function saveOrders() {
+      localStorage.setItem('dc_orders', JSON.stringify(orders));
+    }
+
+    function renderOrders(filter = 'all') {
+      const container = document.getElementById('ordersContainer');
+      const filtered = filter === 'all' ? orders : orders.filter(o => o.category === filter);
+      container.innerHTML = filtered.map(order => `
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span style="color:var(--accent); font-weight:700;">${order.price}</span>
+            <span style="color:var(--muted); font-size:0.8rem;">${order.date}</span>
+          </div>
+          <h3 style="margin-bottom:8px;">${order.title}</h3>
+          <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">${order.desc}</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.8rem;">👤 ${order.author}</span>
+            <button class="btn btn-primary" onclick="alert('Отклик отправлен!')">Откликнуться</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterOrders(cat) {
+      // Обновляем активные кнопки
+      document.querySelectorAll('.btn-outline').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      renderOrders(cat);
+    }
+
+    // Инициализация
+    renderOrders();
+  </script>
+</body>
+</html>
