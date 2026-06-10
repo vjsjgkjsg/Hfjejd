@@ -1,91 +1,559 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DC_ROOT — Биржа</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TеньKанц GLOBAL</title>
+    <!-- Telegram Web App API (подключи, когда будешь деплоить в бота) -->
+    <!-- <script src="https://telegram.org/js/telegram-web-app.js"></script> -->
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --green: #00ff41;
+            --green-dim: #00cc33;
+            --red: #ff3333;
+            --red-dim: #cc0000;
+            --text: #cccccc;
+            --text-dim: #888888;
+            --border: #2a2a2a;
+            --shadow: 0 0 12px rgba(0, 255, 65, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 16px 12px 80px;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Типографский мусор в фоне */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: repeating-linear-gradient(0deg, rgba(0,255,65,0.03) 0px, rgba(0,255,65,0.03) 1px, transparent 1px, transparent 3px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Верхняя панель */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            background: var(--surface);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--green);
+            text-shadow: 0 0 8px var(--green);
+            letter-spacing: 2px;
+        }
+        .balance-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0d0d0d;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--green);
+            font-size: 14px;
+        }
+        .balance-amount {
+            color: var(--green);
+            font-weight: bold;
+        }
+        .notif-icon {
+            font-size: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: var(--red);
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Мои Мастера */
+        .section-title {
+            font-size: 16px;
+            color: var(--green);
+            margin-bottom: 12px;
+            border-left: 3px solid var(--green);
+            padding-left: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .masters-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .master-card {
+            min-width: 110px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(0,255,65,0.1);
+        }
+        .master-avatar {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+        .master-nick {
+            font-weight: bold;
+            color: var(--green);
+            font-size: 14px;
+        }
+        .master-role {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        .master-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            margin-right: 4px;
+            box-shadow: 0 0 6px var(--green);
+        }
+
+        /* Кнопки действий */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .action-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .action-btn:active {
+            transform: scale(0.96);
+            border-color: var(--green);
+            box-shadow: 0 0 12px var(--green);
+        }
+        .action-btn .icon {
+            font-size: 26px;
+        }
+        .action-btn.red {
+            border-color: var(--red-dim);
+            color: var(--red);
+        }
+        .action-btn.red:active {
+            border-color: var(--red);
+            box-shadow: 0 0 14px var(--red);
+        }
+
+        /* Объявления (бегущая строка) */
+        .marquee-wrap {
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 13px;
+            color: #aaaaaa;
+        }
+        .marquee-wrap marquee {
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Кнопка создать заказ */
+        .create-order-btn {
+            display: block;
+            width: 100%;
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--green);
+            margin-bottom: 24px;
+            transition: all 0.2s;
+            animation: pulse 2s infinite;
+        }
+        .create-order-btn:active {
+            background: #00cc33;
+            box-shadow: 0 0 30px var(--green);
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 12px var(--green); }
+            50% { box-shadow: 0 0 28px var(--green), 0 0 40px rgba(0,255,65,0.4); }
+            100% { box-shadow: 0 0 12px var(--green); }
+        }
+
+        /* Лента операций */
+        .log-list {
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 12px;
+            color: #999;
+            list-style: none;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+        .log-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .log-list li:last-child {
+            border-bottom: none;
+        }
+        .log-time {
+            color: var(--green);
+            margin-right: 6px;
+            white-space: nowrap;
+        }
+        .status-done {
+            color: var(--green);
+        }
+        .status-test {
+            color: #ffaa00;
+        }
+
+        /* Модальное окно заказа */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--green);
+            border-radius: 16px;
+            padding: 20px;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 0 30px rgba(0,255,65,0.4);
+        }
+        .modal h3 {
+            color: var(--green);
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .modal select, .modal textarea {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        .btn-close {
+            background: #333;
+            color: #ccc;
+        }
+        .btn-send {
+            background: var(--green);
+            color: #000;
+        }
+
+        /* Адаптив */
+        @media (max-width: 380px) {
+            .actions-grid {
+                gap: 8px;
+            }
+            .action-btn {
+                padding: 10px 4px;
+                font-size: 11px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="bg-grid"></div>
-  <div class="container">
-    <!-- Шапка -->
-    <header class="header">
-      <div class="logo">DC_ROOT</div>
-      <nav class="nav-links">
-        <a href="index.html" class="active">Биржа</a>
-        <a href="services.html">Услуги</a>
-        <a href="freelancers.html">Исполнители</a>
-        <a href="create.html">+ Заказ</a>
-        <a href="profile.html">Профиль</a>
-      </nav>
-    </header>
+    <div class="app">
+        <!-- Хедер -->
+        <header class="header">
+            <div class="logo">☠️ TеньKанц GLOBAL</div>
+            <div class="balance-block">
+                💰 <span class="balance-amount" id="balance">13.666</span> $TENЬ
+            </div>
+            <div class="notif-icon" onclick="alert('Уведомления: 2 новых заказа от Васянов')">
+                🔔
+                <span class="notif-badge">2</span>
+            </div>
+        </header>
 
-    <!-- Фильтры -->
-    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-      <button class="btn btn-outline active" onclick="filterOrders('all')">Все</button>
-      <button class="btn btn-outline" onclick="filterOrders('bot')">Боты</button>
-      <button class="btn btn-outline" onclick="filterOrders('site')">Сайты</button>
-      <button class="btn btn-outline" onclick="filterOrders('parse')">Парсинг</button>
-    </div>
-
-    <!-- Список заказов -->
-    <div id="ordersContainer" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-      <!-- Заказы рендерятся через JS -->
-    </div>
-  </div>
-
-  <!-- Нижняя навигация -->
-  <div class="bottom-nav">
-    <a href="index.html" class="active">🏠 Биржа</a>
-    <a href="services.html">📦 Услуги</a>
-    <a href="create.html">✍️ Создать</a>
-    <a href="profile.html">👤 Профиль</a>
-  </div>
-
-  <script>
-    // Демо-заказы, если localStorage пуст
-    const demoOrders = [
-      { id: 1, title: "Бот для обнала крипты", category: "bot", price: "от $800", desc: "Нужен телеграм-бот с автоприёмом платежей и распределением по кошелькам.", author: "CryptoShadow", date: "2025-01-10" },
-      { id: 2, title: "Лендинг под инфокурс", category: "site", price: "от $450", desc: "Одностраничник с видео-продажником и формой оплаты.", author: "InfoBoss", date: "2025-01-09" },
-      { id: 3, title: "Парсер аудитории Telegram", category: "parse", price: "от $250", desc: "Сбор активных пользователей из чатов, фильтрация по ключевым словам.", author: "DataHunter", date: "2025-01-08" }
-    ];
-
-    // Загрузка из localStorage
-    let orders = JSON.parse(localStorage.getItem('dc_orders')) || demoOrders;
-
-    function saveOrders() {
-      localStorage.setItem('dc_orders', JSON.stringify(orders));
-    }
-
-    function renderOrders(filter = 'all') {
-      const container = document.getElementById('ordersContainer');
-      const filtered = filter === 'all' ? orders : orders.filter(o => o.category === filter);
-      container.innerHTML = filtered.map(order => `
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="color:var(--accent); font-weight:700;">${order.price}</span>
-            <span style="color:var(--muted); font-size:0.8rem;">${order.date}</span>
-          </div>
-          <h3 style="margin-bottom:8px;">${order.title}</h3>
-          <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">${order.desc}</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:0.8rem;">👤 ${order.author}</span>
-            <button class="btn btn-primary" onclick="alert('Отклик отправлен!')">Откликнуться</button>
-          </div>
+        <!-- Мои Мастера -->
+        <div class="section-title">👥 Мои Мастера</div>
+        <div class="masters-scroll" id="mastersContainer">
+            <!-- Заполняем через JS -->
         </div>
-      `).join('');
-    }
 
-    function filterOrders(cat) {
-      // Обновляем активные кнопки
-      document.querySelectorAll('.btn-outline').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-      renderOrders(cat);
-    }
+        <!-- Действия -->
+        <div class="section-title">⚡ Быстрые действия</div>
+        <div class="actions-grid">
+            <div class="action-btn" onclick="showModal('doc')">
+                <span class="icon">🪪</span> Изменить док
+            </div>
+            <div class="action-btn" onclick="showModal('bot')">
+                <span class="icon">🤖</span> Заказать бота
+            </div>
+            <div class="action-btn" onclick="showModal('script')">
+                <span class="icon">⚙️</span> Скрипт
+            </div>
+            <div class="action-btn red" onclick="fakeAlert('Зачистка данных — выберите цель')">
+                <span class="icon">🧹</span> Зачистка
+            </div>
+            <div class="action-btn" onclick="fakeAlert('Генерация справки: выберите шаблон')">
+                <span class="icon">📜</span> Справка
+            </div>
+            <div class="action-btn" onclick="fakeAlert('Портфолио: 13 кейсов «до/после»')">
+                <span class="icon">💼</span> Портфолио
+            </div>
+        </div>
 
-    // Инициализация
-    renderOrders();
-  </script>
+        <!-- Доска объявлений -->
+        <div class="marquee-wrap">
+            <marquee behavior="scroll" direction="left" scrollamount="5">
+                🔥 Докер_666: только что сделал Вове права на трактор, отдал за 5 минут. &nbsp;&nbsp;&nbsp;
+                🤖 БотоVод: скрипт для автолайков готов, тестим на канале с котиками. &nbsp;&nbsp;&nbsp;
+                ⚡ Срочно! Нужен чел на замену текста в 100 PDF, платим удвоенно $TENЬ.
+            </marquee>
+        </div>
+
+        <!-- Кнопка Создать заказ -->
+        <button class="create-order-btn" onclick="showModal('order')">📋 СОЗДАТЬ ЗАКАЗ</button>
+
+        <!-- Лента операций -->
+        <div class="section-title">📟 Последние операции</div>
+        <ul class="log-list" id="logList">
+            <!-- Динамическое обновление -->
+        </ul>
+        <div style="text-align: right; margin-top: 6px;">
+            <button onclick="addRandomLog()" style="background: transparent; border: 1px solid var(--green); color: var(--green); padding: 4px 12px; border-radius: 6px; font-family: monospace;">🔄 Обновить лог</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">📋 Новый заказ</h3>
+            <select id="serviceType">
+                <option value="doc">🪪 Изменение документа</option>
+                <option value="bot">🤖 Бот / скрипт</option>
+                <option value="other">⚙️ Другое</option>
+            </select>
+            <textarea id="orderDesc" rows="3" placeholder="Опиши, что нужно сделать..."></textarea>
+            <div class="modal-buttons">
+                <button class="btn btn-close" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-send" onclick="submitOrder()">Отправить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Мастера (статический список, позже можно подгружать)
+        const masters = [
+            { nick: 'Докер_666', role: 'PDF, Word, справки', avatar: '💀', status: true },
+            { nick: 'БотоVод', role: 'Telegram боты', avatar: '🤖', status: true },
+            { nick: 'Script_K1d', role: 'Парсеры, автосбор', avatar: '👾', status: true },
+            { nick: 'Печать_Барона', role: 'Печати, штампы', avatar: '🦭', status: false },
+            { nick: 'Data_Призрак', role: 'Excel, базы', avatar: '👻', status: true }
+        ];
+
+        function renderMasters() {
+            const container = document.getElementById('mastersContainer');
+            container.innerHTML = masters.map(m => `
+                <div class="master-card">
+                    <div class="master-avatar">${m.avatar}</div>
+                    <div class="master-nick">
+                        <span class="master-status" style="background: ${m.status ? '#00ff41' : '#555'}"></span>${m.nick}
+                    </div>
+                    <div class="master-role">${m.role}</div>
+                </div>
+            `).join('');
+        }
+
+        // Лог операций (пример)
+        let logEntries = [
+            { time: '12:30', text: 'Создан док "Справка_Иванов.pdf"', status: 'done' },
+            { time: '12:15', text: 'Бот @SuperLikerBot запущен', status: 'test' },
+            { time: '11:58', text: 'Скрипт парсинга Avito выполнен', status: 'test' }
+        ];
+
+        function renderLogs() {
+            const list = document.getElementById('logList');
+            list.innerHTML = logEntries.map(entry => `
+                <li>
+                    <span class="log-time">[${entry.time}]</span>
+                    <span class="${entry.status === 'done' ? 'status-done' : 'status-test'}">
+                        ${entry.status === 'done' ? '✅' : '⏳'} ${entry.text}
+                    </span>
+                </li>
+            `).join('');
+        }
+
+        function addRandomLog() {
+            const actions = ['Док "Справка_Петров" обновлён', 'Бот для голосования готов', 'Скрипт рассылки запущен', 'Печать подделана (демо)'];
+            const randomText = actions[Math.floor(Math.random() * actions.length)];
+            const now = new Date();
+            const time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            logEntries.unshift({ time, text: randomText, status: Math.random() > 0.3 ? 'done' : 'test' });
+            if (logEntries.length > 8) logEntries.pop();
+            renderLogs();
+            // Обновим баланс (шутка)
+            const bal = document.getElementById('balance');
+            let current = parseFloat(bal.innerText);
+            bal.innerText = (current + (Math.random() * 2 - 0.5)).toFixed(3);
+        }
+
+        // Модальное окно
+        function showModal(type) {
+            const modal = document.getElementById('orderModal');
+            const title = document.getElementById('modalTitle');
+            if (type === 'doc') title.innerText = '🪪 Изменить документ';
+            else if (type === 'bot') title.innerText = '🤖 Заказать бота';
+            else if (type === 'script') title.innerText = '⚙️ Заказать скрипт';
+            else title.innerText = '📋 Новый заказ';
+            document.getElementById('serviceType').value = type === 'order' ? 'doc' : type;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        function submitOrder() {
+            const service = document.getElementById('serviceType').value;
+            const desc = document.getElementById('orderDesc').value || 'Без описания';
+            // В реальности отправляем на сервер, а пока добавим лог
+            const now = new Date();
+            const time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            const serviceNames = { doc: 'Изменение дока', bot: 'Бот', other: 'Заказ' };
+            logEntries.unshift({
+                time,
+                text: `Заказ "${serviceNames[service] || 'Услуга'}": ${desc.substring(0, 30)}${desc.length>30?'...':''}`,
+                status: 'test'
+            });
+            if (logEntries.length > 8) logEntries.pop();
+            renderLogs();
+            closeModal();
+            document.getElementById('orderDesc').value = '';
+            // Всплывашка в стиле системы
+            alert('✅ Заказ принят! Мастер назначен: ' + masters[Math.floor(Math.random()*masters.length)].nick);
+            // Увеличим баланс ради смеха
+            const bal = document.getElementById('balance');
+            bal.innerText = (parseFloat(bal.innerText) - (Math.random()*1.5).toFixed(3)).toFixed(3);
+        }
+
+        function fakeAlert(msg) {
+            alert('🔒 ' + msg + '\n(демо-режим)');
+        }
+
+        // Инициализация
+        renderMasters();
+        renderLogs();
+
+        // Закрытие модального окна по клику вне области (для удобства)
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Если используется Telegram Web App, можно настроить тему
+        // if (window.Telegram?.WebApp) {
+        //   const tg = window.Telegram.WebApp;
+        //   tg.ready();
+        //   tg.MainButton.hide();
+        // }
+    </script>
 </body>
 </html>
